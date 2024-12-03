@@ -142,7 +142,7 @@ class ParametricPlot {
         Plotly.react('plot', data);
     }
 
-    handlePreviewClick() {
+    async handlePreviewClick() {
         if (!this.isPreviewMode) {
             // Enter preview mode
             this.isPreviewMode = true;
@@ -152,7 +152,28 @@ class ParametricPlot {
         } else {
             // Execute run action
             this.previewButton.disabled = true;
-            this.fetchAndUpdatePlot();
+            
+            try {
+                // Send sampled points to fitting endpoint
+                const response = await fetch('/fit_points', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(this.points.filter(p => p.is_point))
+                });
+    
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+    
+                this.points = await response.json();
+                this.updatePlot();
+                this.logStatus('Curve fitted to points');
+            } catch (error) {
+                this.logStatus('Error fitting curve: ' + error.message);
+                console.error('Error:', error);
+            }
         }
     }
 

@@ -7,8 +7,6 @@ from datetime import datetime
 from typing import List, Tuple
 
 
-
-
 def create_app():
     app = Flask(__name__, static_folder='../static', template_folder='../templates')
     CORS(app)

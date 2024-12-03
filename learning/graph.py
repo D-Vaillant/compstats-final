@@ -4,10 +4,11 @@ from typing import List
 
 @dataclass
 class Point:
+    t: float
     x: float
     y: float
-    is_point: bool
-    color: str
+    is_point: bool = False
+    color: str = ''
     
     
 def generate_points(A: float, a: float, B: float, b: float, 
@@ -28,7 +29,7 @@ def generate_points(A: float, a: float, B: float, b: float,
     y = B * np.sin(b * t + phase_rad)
     
     # Create list of all points (initially not marked)
-    points = [Point(float(x[i]), float(y[i]), False, '') 
+    points = [Point(float(t[i]), float(x[i]), float(y[i]), False, '') 
              for i in range(n_points)]
     
     # Randomly select n_sampled points to be marked
