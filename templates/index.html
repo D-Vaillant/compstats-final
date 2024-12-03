@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parametric Curve</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="plot-container">
+            <div id="plot"></div>
+        </div>
+        <div class="controls-container">
+            <div class="controls">
+                <div class="parameter">
+                    <label for="A">A (X Amplitude):</label>
+                    <input type="range" id="A" min="0" max="10" value="1" step="0.1">
+                    <span id="AValue">1</span>
+                </div>
+                <div class="parameter">
+                    <label for="a">a (X Frequency):</label>
+                    <input type="range" id="a" min="0" max="10" value="1" step="0.1">
+                    <span id="aValue">1</span>
+                </div>
+                <div class="parameter">
+                    <label for="B">B (Y Amplitude):</label>
+                    <input type="range" id="B" min="0" max="10" value="1" step="0.1">
+                    <span id="BValue">1</span>
+                </div>
+                <div class="parameter">
+                    <label for="b">b (Y Frequency):</label>
+                    <input type="range" id="b" min="0" max="10" value="1" step="0.1">
+                    <span id="bValue">1</span>
+                </div>
+                <div class="parameter">
+                    <label for="phase">Phase (degrees):</label>
+                    <input type="range" id="phase" min="0" max="360" value="0">
+                    <span id="phaseValue">0</span>
+                </div>
+                <!-- <div class="parameter">
+                    <label for="n_points">Total Points:</label>
+                    <input type="range" id="n_points" min="100" max="2000" value="1000" step="100">
+                    <span id="n_pointsValue">1000</span>
+                </div> -->
+                <div class="parameter">
+                    <label for="n_sampled">Sampled Points:</label>
+                    <input type="range" id="n_sampled" min="0" max="50" value="10">
+                    <span id="n_sampledValue">10</span>
+                </div>
+                <button id="previewButton">Preview</button>
+                <button id="resetButton" disabled>Reset</button>
+            </div>
+            <div id="statusLog" class="status-log"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/plot.js') }}"></script>
+</body>
+</html>
