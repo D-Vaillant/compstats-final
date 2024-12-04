@@ -2,6 +2,33 @@ class ParametricPlot {
     constructor() {
         this.isPreviewMode = false;
         this.points = null;
+        this.baseLayout = {
+            title: 'Lissajous Curve',
+            showlegend: true,
+            legend: {
+                x: 1,
+                y: 1,
+                xanchor: 'right',
+                yanchor: 'top',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                bordercolor: '#ccc',
+                borderwidth: 1
+            },
+            xaxis: {
+                gridcolor: '#eee',
+                zerolinecolor: '#ccc',
+                title: 'X'
+            },
+            yaxis: {
+                gridcolor: '#eee',
+                zerolinecolor: '#ccc',
+                title: 'Y',
+                scaleanchor: 'x',
+                scaleratio: 1
+            },
+            paper_bgcolor: '#fafafa',
+            plot_bgcolor: '#ececec'
+        };
         
         // Initialize UI elements
         this.previewButton = document.getElementById('previewButton');
@@ -23,7 +50,7 @@ class ParametricPlot {
         };
 
         this.setupEventListeners();
-        this.initializePlot();
+        Plotly.newPlot('plot', [], this.baseLayout);
 
         // Generate initial curve
         this.fetchAndUpdatePlot().then(() => {
@@ -53,26 +80,26 @@ class ParametricPlot {
         this.clearButton.addEventListener('click', () => this.handleClearClick());
     }
 
-    initializePlot() {
-        // Setup initial plot layout
-        const layout = {
-            showlegend: true,
-            xaxis: {
-                title: 'X',
-                zeroline: true,
-                showgrid: true
-            },
-            yaxis: {
-                title: 'Y',
-                zeroline: true,
-                showgrid: true,
-                scaleanchor: 'x',  // Ensure equal scaling
-                scaleratio: 1
-            }
-        };
+    // initializePlot() {
+    //     // Setup initial plot layout
+    //     const layout = {
+    //         showlegend: true,
+    //         xaxis: {
+    //             title: 'X',
+    //             zeroline: true,
+    //             showgrid: true
+    //         },
+    //         yaxis: {
+    //             title: 'Y',
+    //             zeroline: true,
+    //             showgrid: true,
+    //             scaleanchor: 'x',  // Ensure equal scaling
+    //             scaleratio: 1
+    //         }
+    //     };
 
-        Plotly.newPlot('plot', [], layout);
-    }
+    //     Plotly.newPlot('plot', [], layout);
+    // }
 
     async fetchAndUpdatePlot() {
         try {
@@ -166,35 +193,35 @@ class ParametricPlot {
             }
         ];
     
-        const layout = {
-            title: 'Lissajous Curve',
-            showlegend: true,
-            legend: {
-                x: 1,
-                y: 0.5,
-                xanchor: 'right',
-                yanchor: 'middle',
-                bgcolor: 'rgba(255, 255, 255, 0.8)',
-                bordercolor: '#ccc',
-                borderwidth: 1
-            },
-            xaxis: {
-                gridcolor: '#eee',
-                zerolinecolor: '#ccc',
-                title: 'X'
-            },
-            yaxis: {
-                gridcolor: '#eee',
-                zerolinecolor: '#ccc',
-                title: 'Y',
-                scaleanchor: 'x',
-                scaleratio: 1
-            },
-            paper_bgcolor: '#fafafa',
-            plot_bgcolor: '#ececec'
-        };
+        // const layout = {
+        //     title: 'Lissajous Curve',
+        //     showlegend: true,
+        //     legend: {
+        //         x: 1,
+        //         y: 1,
+        //         xanchor: 'right',
+        //         yanchor: 'top',
+        //         bgcolor: 'rgba(255, 255, 255, 0.8)',
+        //         bordercolor: '#ccc',
+        //         borderwidth: 1
+        //     },
+        //     xaxis: {
+        //         gridcolor: '#eee',
+        //         zerolinecolor: '#ccc',
+        //         title: 'X'
+        //     },
+        //     yaxis: {
+        //         gridcolor: '#eee',
+        //         zerolinecolor: '#ccc',
+        //         title: 'Y',
+        //         scaleanchor: 'x',
+        //         scaleratio: 1
+        //     },
+        //     paper_bgcolor: '#fafafa',
+        //     plot_bgcolor: '#ececec'
+        // };
     
-        Plotly.react('plot', data, layout);
+        Plotly.react('plot', data, this.baseLayout);
     }
 
     async handlePreviewClick() {
@@ -229,7 +256,7 @@ class ParametricPlot {
                 const resp = await response.json()
                 this.points = resp.points;
                 this.updatePlot();
-                this.logStatus(`Curves fitted and plotted. MSE = ${resp.error}`);
+                this.logStatus(`Curves fitted and plotted. MSE = ${resp.mse}`);
             } catch (error) {
                 this.logStatus('Error fitting curves: ' + error.message);
                 console.error('Error:', error);

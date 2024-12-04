@@ -81,7 +81,23 @@ def fit_curve(sampled_points: List[Point],
     # [p for p in sampled_points if p.is_point]
     return regressor.fit_predict(sampled_points)
 
+
 def calculate_error(ground_truth: List[Point],
                     fitted_points: List[Point]) -> float:
-    ...
-    return 0
+    # This requires that we have the same amount of points in ground_truth and fitted_points.
+    # This is because the backend actually doesn't know the function at all. It just has the graph of it.
+    # This could be fixed in other ways, but I'm doing the hack of enforcing this.
+    try:
+        assert(len(ground_truth) == len(fitted_points))
+    except AssertionError:
+        return -1  # Error code: Unequal lengths of ground_truth and fitted_points.
+    # print(f"Ground truth length: {len(ground_truth)}")
+    # print(f"Fitted points length: {len(fitted_points)}")
+    
+    gt_array = np.array([(p.x, p.y) for p in ground_truth])
+    fit_array = np.array([(p.x, p.y) for p in fitted_points])
+    
+    differences = gt_array - fit_array
+    # assert(len(ground_truth) == len(fitted_points))
+    # differences = np.array([(p.x, p.y) for p in ground_truth]) - np.array([(p.x, p.y) for p in fitted_points])
+    return np.mean(np.sum(differences ** 2, axis=1))

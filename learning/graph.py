@@ -10,15 +10,14 @@ class Point:
     is_point: bool = False
     color: str = ''
     
-    
+# TODO: Figure out where `n_points` should live.    
 def generate_points(A: float, a: float, B: float, b: float, 
                    phase: float, n_sampled: int,
-                   noise: float) -> List[Point]:
+                   noise: float,
+                   n_points: int = 1000) -> List[Point]:
     """
     Generate points based on parametric equations with selective sampling.
     """
-    n_points = 2000
-
     # Convert phase to radians
     phase_rad = np.deg2rad(phase)
     
