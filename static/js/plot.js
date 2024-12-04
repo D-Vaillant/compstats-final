@@ -5,6 +5,27 @@ class ParametricPlot {
         this.baseLayout = {
             title: 'Lissajous Curve',
             showlegend: true,
+            updatemenus: [{
+                type: 'buttons',
+                direction: 'right',
+                showactive: true,
+                x: 0.5,
+                xanchor: 'center',
+                y: 1.07,
+                buttons: [{
+                    label: 'X vs Y',
+                    method: 'update',
+                    args: [{'visible': [true, true, true, false, false, false, false, false, false]}, {'xaxis.title': 'X', 'yaxis.title': 'Y'}]
+                }, {
+                    label: 'T vs X',
+                    method: 'update',
+                    args: [{'visible': [false, false, false, true, true, true, false, false, false]}, {'xaxis.title': 'T', 'yaxis.title': 'X'}]
+                }, {
+                    label: 'T vs Y',
+                    method: 'update',
+                    args: [{'visible': [false, false, false, false, false, false, true, true, true]}, {'xaxis.title': 'T', 'yaxis.title': 'Y'}]
+                }]
+            }],
             legend: {
                 x: 1,
                 y: 1,
@@ -80,27 +101,6 @@ class ParametricPlot {
         this.clearButton.addEventListener('click', () => this.handleClearClick());
     }
 
-    // initializePlot() {
-    //     // Setup initial plot layout
-    //     const layout = {
-    //         showlegend: true,
-    //         xaxis: {
-    //             title: 'X',
-    //             zeroline: true,
-    //             showgrid: true
-    //         },
-    //         yaxis: {
-    //             title: 'Y',
-    //             zeroline: true,
-    //             showgrid: true,
-    //             scaleanchor: 'x',  // Ensure equal scaling
-    //             scaleratio: 1
-    //         }
-    //     };
-
-    //     Plotly.newPlot('plot', [], layout);
-    // }
-
     async fetchAndUpdatePlot() {
         try {
             // Build query string from parameters
@@ -126,7 +126,7 @@ class ParametricPlot {
             if (this.points.error) {
                 throw new Error(this.points.error);
             }
-    
+
             this.updatePlot();
             // this.logStatus('Data updated successfully');
         } catch (error) {
@@ -140,38 +140,33 @@ class ParametricPlot {
             console.log('Empty points array.');
             return;
         }
-        
+
+        const getHoverText = (points) => points.map(p => 
+            `T: ${p.t}<br>X: ${p.x}<br>Y: ${p.y}`
+        );
         // console.log('Received data structure:', this.points);
-    
         const data = [
-            // Ground Truth Layer
+            // X vs Y view
             {
                 x: this.points.groundTruth.map(p => p.x),
                 y: this.points.groundTruth.map(p => p.y),
                 type: 'scatter',
                 mode: 'lines',
                 name: 'Ground Truth',
-                line: {
-                    color: 'rgb(70, 70, 70)',
-                    width: 2,
-                    opacity: 0.3
-                }
+                line: {color: 'rgb(70, 70, 70)', width: 2, opacity: 0.3},
+                hovertemplate: 'Ground Truth<br>%{text}<extra></extra>',
+                text: getHoverText(this.points.groundTruth)
             },
-            // Predicted Layer
             {
                 x: this.points.predicted.map(p => p.x),
                 y: this.points.predicted.map(p => p.y),
                 type: 'scatter',
                 mode: 'lines',
                 name: 'Predicted',
-                line: {
-                    color: '#2196F3',
-                    width: 3,
-                    dash: 'dash',
-                    opacity: 0.6
-                }
+                line: {color: '#2196F3', width: 3, dash: 'dash', opacity: 0.6},
+                hovertemplate: 'Predicted<br>%{text}<extra></extra>',
+                text: getHoverText(this.points.predicted)
             },
-            // Sampled Points Layer
             {
                 x: this.points.sampledPoints.filter(p => p.is_point).map(p => p.x),
                 y: this.points.sampledPoints.filter(p => p.is_point).map(p => p.y),
@@ -180,48 +175,90 @@ class ParametricPlot {
                 name: 'Samples',
                 marker: {
                     size: 8,
-                    color: this.points.sampledPoints
-                        .filter(p => p.is_point)
-                        .map(p => p.color),
+                    color: this.points.sampledPoints.filter(p => p.is_point).map(p => p.color),
                     symbol: 'circle',
                     opacity: 0.7,
-                    line: {
-                        color: 'white',
-                        width: 2
-                    }
-                }
+                    line: {color: 'white', width: 2}
+                },
+                hovertemplate: 'Samples<br>%{text}<extra></extra>',
+                text: getHoverText(this.points.sampledPoints.filter(p => p.is_point))
+            },
+
+            // T vs X view
+            {
+                x: this.points.groundTruth.map(p => p.t),
+                y: this.points.groundTruth.map(p => p.x),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Ground Truth',
+                line: {color: 'rgb(70, 70, 70)', width: 2, opacity: 0.3},
+                visible: false
+            },
+            {
+                x: this.points.predicted.map(p => p.t),
+                y: this.points.predicted.map(p => p.x),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Predicted',
+                line: {color: '#2196F3', width: 3, dash: 'dash', opacity: 0.6},
+                visible: false
+            },
+            {
+                x: this.points.sampledPoints.filter(p => p.is_point).map(p => p.t),
+                y: this.points.sampledPoints.filter(p => p.is_point).map(p => p.x),
+                type: 'scatter',
+                mode: 'markers',
+                name: 'Samples',
+                marker: {
+                    size: 8,
+                    color: this.points.sampledPoints.filter(p => p.is_point).map(p => p.color),
+                    symbol: 'circle',
+                    opacity: 0.7,
+                    line: {color: 'white', width: 2}
+                },
+                visible: false
+            },
+
+            // T vs Y view
+            {
+                x: this.points.groundTruth.map(p => p.t),
+                y: this.points.groundTruth.map(p => p.y),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Ground Truth',
+                line: {color: 'rgb(70, 70, 70)', width: 2, opacity: 0.3},
+                visible: false
+            },
+            {
+                x: this.points.predicted.map(p => p.t),
+                y: this.points.predicted.map(p => p.y),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Predicted',
+                line: {color: '#2196F3', width: 3, dash: 'dash', opacity: 0.6},
+                visible: false
+            },
+            {
+                x: this.points.sampledPoints.filter(p => p.is_point).map(p => p.t),
+                y: this.points.sampledPoints.filter(p => p.is_point).map(p => p.y),
+                type: 'scatter',
+                mode: 'markers',
+                name: 'Samples',
+                marker: {
+                    size: 8,
+                    color: this.points.sampledPoints.filter(p => p.is_point).map(p => p.color),
+                    symbol: 'circle',
+                    opacity: 0.7,
+                    line: {color: 'white', width: 2}
+                },
+                visible: false
             }
         ];
-    
-        // const layout = {
-        //     title: 'Lissajous Curve',
-        //     showlegend: true,
-        //     legend: {
-        //         x: 1,
-        //         y: 1,
-        //         xanchor: 'right',
-        //         yanchor: 'top',
-        //         bgcolor: 'rgba(255, 255, 255, 0.8)',
-        //         bordercolor: '#ccc',
-        //         borderwidth: 1
-        //     },
-        //     xaxis: {
-        //         gridcolor: '#eee',
-        //         zerolinecolor: '#ccc',
-        //         title: 'X'
-        //     },
-        //     yaxis: {
-        //         gridcolor: '#eee',
-        //         zerolinecolor: '#ccc',
-        //         title: 'Y',
-        //         scaleanchor: 'x',
-        //         scaleratio: 1
-        //     },
-        //     paper_bgcolor: '#fafafa',
-        //     plot_bgcolor: '#ececec'
-        // };
-    
+
+        const currentData = document.getElementById('plot').data;
+        const visibleState = currentData.map(trace => trace.visible);
         Plotly.react('plot', data, this.baseLayout);
+        Plotly.update('plot', {visible: visibleState});
     }
 
     async handlePreviewClick() {
