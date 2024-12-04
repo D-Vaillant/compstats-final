@@ -51,7 +51,9 @@ def get_points():
 def fit_points():
     try:
         data = request.get_json()
-        bandwidth = data.get('bandwidth')
+        bandwidth_x = float(data.get('bandwidth_x'))
+        bandwidth_y = float(data.get('bandwidth_y'))
+
         kernel_type = data.get('kernel', 'normal')
         
         # Generate different sets of points
@@ -60,7 +62,8 @@ def fit_points():
         
         
         fitted_points = fit_curve(sampled_points,
-                                  bandwidth=float(bandwidth),
+                                  bandwidth_x=bandwidth_x,
+                                  bandwidth_y=bandwidth_y,
                                   kernel=kernel_type)
         
         points = {

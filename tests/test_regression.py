@@ -83,7 +83,8 @@ def main():
     )
     
     # Create and run regressor
-    regressor = KernelRegressor(bandwidth=0.1)
+    regressor = KernelRegressor(bandwidth_x=0.1,
+                                bandwidth_y=0.1)
     predicted_points = regressor.fit_predict(sampled_points)
     
     plot_results(ground_truth, sampled_points, predicted_points)

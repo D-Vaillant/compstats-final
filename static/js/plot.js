@@ -67,7 +67,8 @@ class ParametricPlot {
             kernel: document.getElementById('kernel'), // Kernel
             n_sampled: document.getElementById('n_sampled'),   // Points to highlight
             noise: document.getElementById('gauss_noise'),  // Amount of gaussian noise
-            bandwidth: document.getElementById('bandwidth'), // Band width.
+            bandwidthX: document.getElementById('bandwidthX'), // Band width for X.
+            bandwidthY: document.getElementById('bandwidthY'), // Band width for Y.
         };
 
         this.setupEventListeners();
@@ -89,7 +90,7 @@ class ParametricPlot {
                 // Update the display value
                 document.getElementById(`${key}Value`).textContent = element.value;
                 // Update plot if not in preview mode
-                if (!(this.isPreviewMode || element.id === 'bandwidth')) {
+                if (!(this.isPreviewMode || element.id.startsWith('bandwidth'))) {
                     this.fetchAndUpdatePlot();
                 }
             });
@@ -267,7 +268,7 @@ class ParametricPlot {
             this.isPreviewMode = true;
             this.previewButton.textContent = 'Run';
             this.resetButton.disabled = false;
-            this.logStatus(`Regression parameters: kernel=${this.params.kernel.value}, bandwidth=${this.params.bandwidth.value}.`);
+            this.logStatus(`Regression parameters: K=${this.params.kernel.value}, bw_X=${this.params.bandwidthX.value}, bw_Y=${this.params.bandwidthY.value}.`);
             Object.values(this.params).forEach(param => param.disabled = true);
         } else {
             // Execute run action
@@ -282,7 +283,8 @@ class ParametricPlot {
                     body: JSON.stringify({
                         'sampled_points': this.points.sampledPoints,
                         'ground_truth': this.points.groundTruth,
-                        'bandwidth': this.params.bandwidth.value,
+                        'bandwidth_x': this.params.bandwidthX.value,
+                        'bandwidth_y': this.params.bandwidthY.value,
                         'kernel': this.params.kernel.value})
                 });
     

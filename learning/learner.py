@@ -4,7 +4,9 @@ from learning.graph import Point
 
 
 class KernelRegressor:
-    def __init__(self, bandwidth: float = 0.1,
+    def __init__(self,
+                 bandwidth_x: float = 0.1,
+                 bandwidth_y: float = 0.1,
                  kernel_choice: str = 'normal'):
         """
         Initialize the nonparametric regressor.
@@ -12,7 +14,8 @@ class KernelRegressor:
             bandwidth: Smoothing parameter for the regression
             kernel_choice: Chooses the kernel.
         """
-        self.bandwidth = bandwidth
+        self.bwx = bandwidth_x
+        self.bwy = bandwidth_y
         self.K = self.kernels[kernel_choice]
 
     @property
@@ -40,31 +43,28 @@ class KernelRegressor:
         x_data = np.array([p.x for p in sampled_points])
         y_data = np.array([p.y for p in sampled_points])
 
-        # Right now, we hardcode the range of 0 to 2*np.pi for the purposes of the t input
-        # and the kernel function. That's fine, probably!
-        
-        K_h = lambda t: (1/self.bandwidth) * self.K(t / (self.bandwidth))
-        
         t_smooth = np.linspace(0, 2*np.pi, num_output_points)
-        
-        x_smooth = np.zeros(len(t_smooth))
-        y_smooth = np.zeros(len(t_smooth))
+
         fitted_points = []
         for i, t in enumerate(t_smooth):
-            weights = self.K((t - t_data) / self.bandwidth)
-            est_x = np.sum(x_data * weights) / np.sum(weights)
-            est_y = np.sum(y_data * weights) / np.sum(weights)
+            xweights = self.K((t - t_data) / self.bwx)
+            yweights = self.K((t - t_data) / self.bwy)
+            est_x = np.sum(x_data * xweights) / np.sum(xweights)
+            est_y = np.sum(y_data * yweights) / np.sum(yweights)
             fitted_points.append(Point(t, est_x, est_y))
 
         return fitted_points
 
 def fit_curve(sampled_points: List[Point],
-              bandwidth: float = 0.1,
+              bandwidth_x: float = 0.1,
+              bandwidth_y: float = 0.1,
               kernel: str = 'normal') -> List[Point]:
     """
     Wrapper function to maintain the same interface.
     """
-    regressor = KernelRegressor(bandwidth=bandwidth, kernel_choice=kernel)
+    regressor = KernelRegressor(bandwidth_x=bandwidth_x,
+                                bandwidth_y=bandwidth_y,
+                                kernel_choice=kernel)
     # [p for p in sampled_points if p.is_point]
     return regressor.fit_predict(sampled_points)
 
