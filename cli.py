@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # cli.py
 import argparse
+import sys
 from learning.learner import calculate_error, KernelRegressor
 from learning.graph import generate_points
 
@@ -22,6 +23,8 @@ def make_argparse():
                         default='normal', help='Kernel to use for regression')
     parser.add_argument('-bwx', '--bandwidth_x', default=0.2, type=float, help='Bandwidth for X regressor')
     parser.add_argument('-bwy', '--bandwidth_y', default=0.2, type=float, help='Bandwidth for Y regressor')
+    parser.add_argument('--x', action='store_true', help='Prints results in scriptable form.')
+    parser.add_argument('--header', action='store_true', help='Includes the header.')
     return parser
 
 
@@ -32,12 +35,24 @@ if __name__ == "__main__":
                                                    n_sampled=50, noise=args.noise, n_points=N)
     regressor = KernelRegressor(args.bandwidth_x, args.bandwidth_y, args.kernel)
     fitted_points = regressor.fit_predict(sampled_points, num_output_points=N)
-    mse = calculate_error(ground_truth, fitted_points)
+    # A bit hacky, sorry.
+    args.mse = calculate_error(ground_truth, fitted_points)
 
     # Human readable.
-    print(f"Parameters: f(t) = ({args.A}*sin({args.a} * t + {args.delta}), {args.B}*sin({args.b} * t))")
-    print(f"Sample variance is {args.noise}. {args.kernel} kernel, bandwidth_x={args.bandwidth_x}, bandwidth_y={args.bandwidth_y}")
-    print(f"MSE = {mse}")
+    if not args.x:
+        # TODO: Create `format_equation` that makes this look nicer.
+        print(f"Parameters: f(t) = ({args.A}*sin({args.a} * t + {args.delta}), {args.B}*sin({args.b} * t))")
+        print(f"Sample variance is {args.noise}. {args.kernel} kernel, bandwidth_x={args.bandwidth_x}, bandwidth_y={args.bandwidth_y}")
+        print(f"MSE = {args.mse}")
+    else:
+        # Scriptable (for CSV).
+        header = [action.dest for action in parser._actions if (action.dest not in ('help', 'x'))]
+        header.append('mse')
+        if args.header:
+            print(','.join(header))
+
+        # TODO: How many decimals do we want?
+        row = [str(getattr(args, col)) for col in header]
+        row.append(f"{args.mse}")
+        print(','.join(row))
     
-    # Scriptable (for CSV).
-    header = [action.dest for action in parser._actions if action.dest != 'help']
