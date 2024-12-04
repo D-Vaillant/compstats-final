@@ -25,14 +25,14 @@ def generate_points(A: float, a: float, B: float, b: float,
     t = np.linspace(0, 2*np.pi, n_points)
     
     # Generate coordinates
-    x = A * np.cos(a * t)
-    y = B * np.sin(b * t + phase_rad)
+    x = A * np.cos(a * t + phase_rad)
+    y = B * np.sin(b * t)
     
     # Create list of all points (initially not marked)
     gt_points = [Point(float(t[i]), float(x[i]), float(y[i]), False, '') 
              for i in range(n_points)]
     
-    # Randomly select n_sampled points to be marked
+    # Uniformly select n_sampled points to be marked
     smp_points = []
     for idx in np.linspace(0, len(gt_points)-1, n_sampled, dtype=int):
         # Copy an existing point, add noise, mark it as a point.

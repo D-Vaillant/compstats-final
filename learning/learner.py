@@ -49,7 +49,7 @@ class KernelRegressor:
         
         x_smooth = np.zeros(len(t_smooth))
         y_smooth = np.zeros(len(t_smooth))
-        for i, t in enumerate(t_data):
+        for i, t in enumerate(t_smooth):
             weights = self.K((t - t_data) / self.bandwidth)
             x_smooth[i] = np.sum(x_data * weights) / np.sum(weights)
             y_smooth[i] = np.sum(y_data * weights) / np.sum(weights)
