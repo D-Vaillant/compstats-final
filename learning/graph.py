@@ -12,11 +12,12 @@ class Point:
     
     
 def generate_points(A: float, a: float, B: float, b: float, 
-                   phase: float, n_sampled: int) -> List[Point]:
+                   phase: float, n_sampled: int,
+                   noise: float) -> List[Point]:
     """
     Generate points based on parametric equations with selective sampling.
     """
-    n_points = 2500
+    n_points = 2000
 
     # Convert phase to radians
     phase_rad = np.deg2rad(phase)
@@ -35,18 +36,12 @@ def generate_points(A: float, a: float, B: float, b: float,
     # Randomly select n_sampled points to be marked
     smp_points = []
     for idx in np.linspace(0, len(gt_points)-1, n_sampled, dtype=int):
+        # Copy an existing point, add noise, mark it as a point.
         point = dataclasses.replace(gt_points[idx])
+        point.x += np.random.normal(0, np.sqrt(noise))
+        point.y += np.random.normal(0, np.sqrt(noise))
         point.is_point = True
         point.color = '0xFFCC66'
         smp_points.append(point)
-        
-    # if n_sampled > 0:
-    #     # Evenly space the sampled points
-    #     sample_indices = np.linspace(0, len(points)-1, n_sampled, dtype=int)
-    #     colors = ['#%06x' % np.random.randint(0, 0xFFFFFF) for _ in range(n_sampled)]
-        
-    #     for idx, color in zip(sample_indices, colors):
-    #         points[idx].is_point = True
-    #         points[idx].color = '0xFFCC66'
     
     return gt_points, smp_points

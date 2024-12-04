@@ -6,6 +6,7 @@ class ParametricPlot {
         // Initialize UI elements
         this.previewButton = document.getElementById('previewButton');
         this.resetButton = document.getElementById('resetButton');
+        this.clearButton = document.getElementById('clearButton');
         this.statusLog = document.getElementById('statusLog');
         
         // Initialize parameters with their DOM elements
@@ -15,7 +16,10 @@ class ParametricPlot {
             B: document.getElementById('B'),         // Amplitude Y
             b: document.getElementById('b'),         // Frequency Y
             phase: document.getElementById('phase'),  // Phase shift
-            n_sampled: document.getElementById('n_sampled')   // Points to highlight
+            kernel: document.getElementById('kernel'), // Kernel
+            n_sampled: document.getElementById('n_sampled'),   // Points to highlight
+            noise: document.getElementById('gauss_noise'),  // Amount of gaussian noise
+            bandwidth: document.getElementById('bandwidth'), // Band width.
         };
 
         this.setupEventListeners();
@@ -30,11 +34,14 @@ class ParametricPlot {
     setupEventListeners() {
         // Add event listeners for all parameter inputs
         Object.entries(this.params).forEach(([key, element]) => {
+            if (element.tagName === 'SELECT') {
+                return;
+            }
             element.addEventListener('input', () => {
                 // Update the display value
                 document.getElementById(`${key}Value`).textContent = element.value;
                 // Update plot if not in preview mode
-                if (!this.isPreviewMode) {
+                if (!(this.isPreviewMode || element.id === 'bandwidth')) {
                     this.fetchAndUpdatePlot();
                 }
             });
@@ -43,12 +50,12 @@ class ParametricPlot {
         // Button event listeners
         this.previewButton.addEventListener('click', () => this.handlePreviewClick());
         this.resetButton.addEventListener('click', () => this.handleResetClick());
+        this.clearButton.addEventListener('click', () => this.handleClearClick());
     }
 
     initializePlot() {
         // Setup initial plot layout
         const layout = {
-            title: 'Parametric Curve',
             showlegend: true,
             xaxis: {
                 title: 'X',
@@ -103,7 +110,7 @@ class ParametricPlot {
 
     updatePlot() {
         if (!this.points) {
-            console.log('No points data');
+            console.log('Empty points array.');
             return;
         }
         
@@ -196,13 +203,13 @@ class ParametricPlot {
             this.isPreviewMode = true;
             this.previewButton.textContent = 'Run';
             this.resetButton.disabled = false;
+            this.logStatus(`Regression parameters: kernel=${this.params.kernel.value}, bandwidth=${this.params.bandwidth.value}.`);
             Object.values(this.params).forEach(param => param.disabled = true);
         } else {
             // Execute run action
             this.previewButton.disabled = true;
             
             try {
-                // Get all current points
                 const response = await fetch('/fit_points', {
                     method: 'POST',
                     headers: {
@@ -210,16 +217,19 @@ class ParametricPlot {
                     },
                     body: JSON.stringify({
                         'sampled_points': this.points.sampledPoints,
-                        'ground_truth': this.points.groundTruth})
+                        'ground_truth': this.points.groundTruth,
+                        'bandwidth': this.params.bandwidth.value,
+                        'kernel': this.params.kernel.value})
                 });
     
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
     
-                this.points = await response.json();
+                const resp = await response.json()
+                this.points = resp.points;
                 this.updatePlot();
-                this.logStatus('Curves fitted and plotted');
+                this.logStatus(`Curves fitted and plotted. MSE = ${resp.error}`);
             } catch (error) {
                 this.logStatus('Error fitting curves: ' + error.message);
                 console.error('Error:', error);
@@ -228,15 +238,25 @@ class ParametricPlot {
     }
 
     handleResetClick() {
+        // If prepping a regression, delete log about it. Eh. Not worth it.
+        // if (this.isPreviewMode) {
+        //     this.statusLog.removeChild(this.statusLog.lastChild);
+        // }
         // Reset to initial state
         this.isPreviewMode = false;
         this.previewButton.textContent = 'Preview';
         this.previewButton.disabled = false;
         this.resetButton.disabled = true;
+
         Object.values(this.params).forEach(param => param.disabled = false);
-        this.points = null;
+        // this.points = this.points.groundTruth.concat(this.points.sampledPoints);
         this.updatePlot();
-        this.logStatus('Plot reset');
+        // this.logStatus('Plot reset');
+    }
+
+    handleClearClick() {
+        // Wipes the entry log.
+        this.statusLog.replaceChildren();
     }
 
     logStatus(message) {
@@ -245,7 +265,7 @@ class ParametricPlot {
         entry.className = 'log-entry';
         const timestamp = new Date().toLocaleTimeString();
         entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
-        this.statusLog.insertBefore(entry, this.statusLog.firstChild);
+        this.statusLog.append(entry);
     }
 }
 
