@@ -17,18 +17,31 @@ def get_points():
         B = float(request.args.get('B', 1.0))
         b = float(request.args.get('b', 1.0))
         phase = float(request.args.get('phase', 0.0))
+        # noise = float(request.args.get('noise', 0.0))
+        # bandwidth = float(request.args.get('bw', 0.1))
+        # kernel = str(request.get.args('kernel', 'normal'))
         # n_points = int(request.args.get('n_points', 1000))
         n_sampled = int(request.args.get('n_sampled', 10))
         
-        points = generate_points(A, a, B, b, phase, n_sampled)
+        ground_truth, sampled_points = generate_points(A, a, B, b, phase, n_sampled)
         
-        return jsonify([{
-            't': p.t,
-            'x': p.x,
-            'y': p.y,
-            'is_point': p.is_point,
-            'color': p.color
-        } for p in points])
+        return jsonify({
+            'groundTruth': [{
+                't': p.t,
+                'x': p.x,
+                'y': p.y,
+                'is_point': p.is_point,
+                'color': p.color
+            } for p in ground_truth],
+            'sampledPoints': [{
+                't': p.t,
+                'x': p.x,
+                'y': p.y,
+                'is_point': p.is_point,
+                'color': p.color
+            } for p in sampled_points],
+            'predicted': []
+        })
     
     except Exception as e:
         return jsonify({'error': str(e)}), 400
@@ -38,16 +51,34 @@ def get_points():
 def fit_points():
     try:
         data = request.get_json()
-        sampled_points = [Point(**p) for p in data]
+        
+        # Generate different sets of points
+        sampled_points = [Point(**p) for p in data['sampled_points']]
+        ground_truth = [Point(**p) for p in data['ground_truth']]
         fitted_points = fit_curve(sampled_points)
         
-        return jsonify([{
-            't': p.t,
-            'x': p.x,
-            'y': p.y,
-            'is_point': p.is_point,
-            'color': p.color
-        } for p in fitted_points])
-    
+        return jsonify({
+            'groundTruth': [{
+                't': p.t,
+                'x': p.x,
+                'y': p.y,
+                'is_point': p.is_point,
+                'color': p.color
+            } for p in ground_truth],
+            'sampledPoints': [{
+                't': p.t,
+                'x': p.x,
+                'y': p.y,
+                'is_point': p.is_point,
+                'color': p.color
+            } for p in sampled_points],
+            'predicted': [{
+                't': p.t,
+                'x': p.x,
+                'y': p.y,
+                'is_point': p.is_point,
+                'color': p.color
+            } for p in fitted_points]
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 400

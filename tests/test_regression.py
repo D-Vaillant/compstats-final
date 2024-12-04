@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from learning.graph import Point
-from learning.learner import NonparametricRegressor
+from learning.learner import KernelRegressor
 from typing import List, Tuple
 
 def generate_toy_data(num_points: int = 1000, 
-                     num_samples: int = 20, 
+                     num_samples: int = 100, 
                      noise_level: float = 0.1) -> Tuple[List[Point], List[Point]]:
     """
     Generate toy Lissajous data with noise.
@@ -83,7 +83,7 @@ def main():
     )
     
     # Create and run regressor
-    regressor = NonparametricRegressor(bandwidth=0.1)
+    regressor = KernelRegressor(bandwidth=0.1)
     predicted_points = regressor.fit_predict(sampled_points)
     
     plot_results(ground_truth, sampled_points, predicted_points)

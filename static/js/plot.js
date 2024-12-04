@@ -102,44 +102,92 @@ class ParametricPlot {
     }
 
     updatePlot() {
-        if (!this.points) return;
-
-        // Separate regular line points and highlighted points
-        const linePoints = this.points.map(p => ({ x: p.x, y: p.y }));
-        const highlightedPoints = this.points
-            .filter(p => p.is_point)
-            .map(p => ({
-                x: p.x,
-                y: p.y,
-                color: p.color
-            }));
-
-        // Create data array for plotting
+        if (!this.points) {
+            console.log('No points data');
+            return;
+        }
+        
+        // console.log('Received data structure:', this.points);
+    
         const data = [
-            // Continuous line
+            // Ground Truth Layer
             {
-                x: linePoints.map(p => p.x),
-                y: linePoints.map(p => p.y),
+                x: this.points.groundTruth.map(p => p.x),
+                y: this.points.groundTruth.map(p => p.y),
                 type: 'scatter',
                 mode: 'lines',
-                name: 'Curve',
-                line: { color: '#2196F3', width: 2 }
+                name: 'Ground Truth',
+                line: {
+                    color: 'rgb(70, 70, 70)',
+                    width: 2,
+                    opacity: 0.3
+                }
             },
-            // Highlighted points
+            // Predicted Layer
             {
-                x: highlightedPoints.map(p => p.x),
-                y: highlightedPoints.map(p => p.y),
+                x: this.points.predicted.map(p => p.x),
+                y: this.points.predicted.map(p => p.y),
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Predicted',
+                line: {
+                    color: '#2196F3',
+                    width: 3,
+                    dash: 'dash',
+                    opacity: 0.6
+                }
+            },
+            // Sampled Points Layer
+            {
+                x: this.points.sampledPoints.filter(p => p.is_point).map(p => p.x),
+                y: this.points.sampledPoints.filter(p => p.is_point).map(p => p.y),
                 type: 'scatter',
                 mode: 'markers',
-                name: 'Sampled Points',
+                name: 'Samples',
                 marker: {
                     size: 8,
-                    color: highlightedPoints.map(p => p.color)
+                    color: this.points.sampledPoints
+                        .filter(p => p.is_point)
+                        .map(p => p.color),
+                    symbol: 'circle',
+                    opacity: 0.7,
+                    line: {
+                        color: 'white',
+                        width: 2
+                    }
                 }
             }
         ];
-
-        Plotly.react('plot', data);
+    
+        const layout = {
+            title: 'Lissajous Curve',
+            showlegend: true,
+            legend: {
+                x: 1,
+                y: 0.5,
+                xanchor: 'right',
+                yanchor: 'middle',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                bordercolor: '#ccc',
+                borderwidth: 1
+            },
+            xaxis: {
+                gridcolor: '#eee',
+                zerolinecolor: '#ccc',
+                title: 'X'
+            },
+            yaxis: {
+                gridcolor: '#eee',
+                zerolinecolor: '#ccc',
+                title: 'Y',
+                scaleanchor: 'x',
+                scaleratio: 1
+            },
+            paper_bgcolor: '#fafafa',
+            plot_bgcolor: '#ececec'
+        };
+    
+        Plotly.react('plot', data, layout);
     }
 
     async handlePreviewClick() {
@@ -154,13 +202,15 @@ class ParametricPlot {
             this.previewButton.disabled = true;
             
             try {
-                // Send sampled points to fitting endpoint
+                // Get all current points
                 const response = await fetch('/fit_points', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(this.points.filter(p => p.is_point))
+                    body: JSON.stringify({
+                        'sampled_points': this.points.sampledPoints,
+                        'ground_truth': this.points.groundTruth})
                 });
     
                 if (!response.ok) {
@@ -169,9 +219,9 @@ class ParametricPlot {
     
                 this.points = await response.json();
                 this.updatePlot();
-                this.logStatus('Curve fitted to points');
+                this.logStatus('Curves fitted and plotted');
             } catch (error) {
-                this.logStatus('Error fitting curve: ' + error.message);
+                this.logStatus('Error fitting curves: ' + error.message);
                 console.error('Error:', error);
             }
         }
