@@ -49,26 +49,13 @@ class KernelRegressor:
         
         x_smooth = np.zeros(len(t_smooth))
         y_smooth = np.zeros(len(t_smooth))
+        fitted_points = []
         for i, t in enumerate(t_smooth):
             weights = self.K((t - t_data) / self.bandwidth)
-            x_smooth[i] = np.sum(x_data * weights) / np.sum(weights)
-            y_smooth[i] = np.sum(y_data * weights) / np.sum(weights)
+            est_x = np.sum(x_data * weights) / np.sum(weights)
+            est_y = np.sum(y_data * weights) / np.sum(weights)
+            fitted_points.append(Point(t, est_x, est_y))
 
-
-        fitted_points = []
-        for t, x, y in zip(t_smooth, x_smooth, y_smooth):
-            fitted_points.append(Point(t, x, y, color='#FF4433'))
-        
-        # # Add back the original sampled points with their colors
-        # for point in sampled_points:
-        #     if point.is_point:
-        #         fitted_points.append(Point(
-        #             x=point.x,
-        #             y=point.y,
-        #             is_point=True,
-        #             color=point.color
-        #         ))
-        
         return fitted_points
 
 def fit_curve(sampled_points: List[Point],
