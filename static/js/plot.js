@@ -11,7 +11,7 @@ class ParametricPlot {
                 showactive: true,
                 x: 0.5,
                 xanchor: 'center',
-                y: 1.07,
+                y: 1.055,
                 buttons: [{
                     label: 'X vs Y',
                     method: 'update',
