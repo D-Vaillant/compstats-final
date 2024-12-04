@@ -50,10 +50,10 @@ class KernelRegressor:
             xweights = self.K((t - t_data) / self.bwx)
             yweights = self.K((t - t_data) / self.bwy)
 
-            if np.sum(xweights) == 0:
-                print(xweights)
-            if np.sum(yweights) == 0:
-                print(yweights)
+            # if np.sum(xweights) == 0:
+            #     print(xweights)
+            # if np.sum(yweights) == 0:
+            #     print(yweights)
             est_x = np.sum(x_data * xweights) / np.sum(xweights)
             est_y = np.sum(y_data * yweights) / np.sum(yweights)
             fitted_points.append(Point(t, est_x, est_y))

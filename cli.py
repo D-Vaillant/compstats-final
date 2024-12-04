@@ -53,6 +53,5 @@ if __name__ == "__main__":
 
         # TODO: How many decimals do we want?
         row = [str(getattr(args, col)) for col in header]
-        row.append(f"{args.mse}")
         print(','.join(row))
     
