@@ -80,3 +80,8 @@ def fit_curve(sampled_points: List[Point],
     regressor = KernelRegressor(bandwidth=bandwidth, kernel_choice=kernel)
     # [p for p in sampled_points if p.is_point]
     return regressor.fit_predict(sampled_points)
+
+def calculate_error(ground_truth: List[Point],
+                    fitted_points: List[Point]) -> float:
+    ...
+    return 0

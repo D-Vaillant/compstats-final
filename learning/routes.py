@@ -86,7 +86,7 @@ def fit_points():
                 'color': p.color
             } for p in fitted_points]
         }
-        return jsonify({'points': points, 'error': calculate_error(ground_truth, )})
+        return jsonify({'points': points, 'error': calculate_error(ground_truth, fitted_points)})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
