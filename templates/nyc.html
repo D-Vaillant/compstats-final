@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NYC Map</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+</head>
+<body>
+    <div class="container">
+    <h1>NYC Map</h1>
+    <div id="loading">Loading map...</div>
+    <div id="nycMap"></div>
+    <!-- <script>
+        const loadingDiv = document.getElementById('loading');
+        
+        async function loadLocations() {
+            loadingDiv.style.display = 'block';
+            try {
+                const response = await fetch('/nyc/locs');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const locations = await response.json();
+                return locations;
+            } catch (error) {
+                console.error('Error loading locations:', error);
+                alert('Error loading locations. Please try again.');
+                return [];
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        async function initMap() {
+            const locations = await loadLocations();
+            
+            const data = [{
+                type: 'scattermapbox',
+                lat: locations.map(loc => loc.decimalLatitude),
+                lon: locations.map(loc => loc.decimalLongitude),
+                mode: 'markers',
+                marker: {
+                    size: 6,
+                    color: 'blue'
+                },
+                text: locations.map(loc => loc.species),
+                hoverinfo: 'text'
+            }];
+
+            const layout = {
+                mapbox: {
+                    style: 'open-street-map',
+                    center: {
+                        lat: 40.7813,
+                        lon: -73.9667
+                    },
+                    zoom: 11
+                },
+                margin: {r: 0, t: 0, l: 0, b: 0},
+                height: 600
+            };
+
+            Plotly.newPlot('map', data, layout);
+        }
+
+        // Initialize the map when the page loads
+        initMap();
+    </script> -->
+    <script src="{{ url_for('static', filename='js/nyc.js') }}"></script>
+</div>
+</body>
+</html>

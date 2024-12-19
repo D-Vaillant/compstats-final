@@ -20,6 +20,7 @@ class KernelRegressor:
 
     @property
     def kernels(self):
+        # There are applied to numpy arrays.
         return {
             'normal': lambda t: np.exp(-0.5 * t**2) / np.sqrt(2 * np.pi),
             'quartic': lambda t: np.where(np.abs(t) <= 1, (15/16) * ((1 - t**2)**2), 0),
@@ -36,7 +37,7 @@ class KernelRegressor:
             num_output_points: Number of points to generate for the smooth curve
         
         Returns:
-            List of Points containing the smooth curve and original sampled points
+            List of Points containing the predicted outputs on a smooth curve
         """
         # Extract coordinates from sampled points
         t_data = np.array([p.t for p in sampled_points])
@@ -64,9 +65,6 @@ def fit_curve(sampled_points: List[Point],
               bandwidth_x: float = 0.1,
               bandwidth_y: float = 0.1,
               kernel: str = 'normal') -> List[Point]:
-    """
-    Wrapper function to maintain the same interface.
-    """
     regressor = KernelRegressor(bandwidth_x=bandwidth_x,
                                 bandwidth_y=bandwidth_y,
                                 kernel_choice=kernel)

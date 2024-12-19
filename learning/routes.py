@@ -1,12 +1,17 @@
 from flask import Blueprint, render_template, jsonify, request
 from learning.graph import generate_points, Point
 from learning.learner import fit_curve, calculate_error
+from learning.db import json_query, get_species_locations
+from learning.kde import fit_and_calculate, optimize_bandwidth
+import duckdb
+import polars as pl
 
 bp = Blueprint('main', __name__)
 
 @bp.route('/')
 def index():
     return render_template('index.html')
+
 
 @bp.route('/get_points', methods=['GET'])
 def get_points():
@@ -94,3 +99,35 @@ def fit_points():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+@bp.route('/nyc')
+def nyc():
+    return render_template('nyc.html')
+
+available_birds = ['Baeolophus bicolor', 'Cyanocitta cristata', 'Sitta carolinensis']
+
+@bp.route('/nyc/locs', methods=['GET'])
+def nyc_locs():
+    species = request.args.get('species', available_birds[0])
+    # df = pl.read_csv("secondbirds.csv")
+    # SQL INJECTION ALERT
+    res = json_query(f"SELECT decimalLatitude, decimalLongitude, ifnull(individualCount, 1) AS individualCount FROM birds.parquet WHERE species = '{species}' LIMIT 1500")
+    return res
+
+@bp.route('/nyc/densities', methods=['GET'])
+def nyc_kde():
+    species = request.args.get('species', available_birds[0])
+    sw = get_species_locations(species).fetchnumpy()
+    K = fit_and_calculate(sw)
+    # Calculate the KDE.
+    return jsonify(K.tolist())
+
+@bp.route('/nyc/densities/refine', methods=['GET'])
+def nyc_bandwidth():
+    species = request.args.get('species', available_birds[0])
+    sw = get_species_locations(species).fetchnumpy()
+    bandwidth_matrix = optimize_bandwidth(sw)
+    K = fit_and_calculate(sw, bandwidth_matrix)
+    # Calculate the KDE.
+    return jsonify(K.tolist())
